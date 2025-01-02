@@ -1,12 +1,27 @@
+import { useState } from "react";
+import MediaWrappedInputs from "./components/MediaWrappedInputs";
+import MediaWrappedOutputs from "./components/MediaWrappedOutputs";
+import { Category } from "./types/Category";
+import { MediaItem } from "./interfaces/MediaItem";
 
 function App() {
+  const [mediaLists, setMediaLists] = useState<Record<Category, MediaItem[]>>({
+    movies: [],
+    tvShows: [],
+    books: [],
+    albums: [],
+    songs: [],
+  });
+
   return (
     <>
-      <div className="min-h-screen flex justify-center items-center">
-         <h1 className="text-4xl font-bold">Media Wrapped</h1>
-      </div>
+      <MediaWrappedInputs
+        mediaLists={mediaLists}
+        setMediaLists={setMediaLists}
+      />
+      <MediaWrappedOutputs mediaLists={mediaLists} />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
