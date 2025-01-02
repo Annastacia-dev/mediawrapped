@@ -33,20 +33,59 @@ function MediaList({
     return undefined; // Fallback if no cover is found
   };
 
-  const fetchImage = async (title: string): Promise<string | undefined> => {
+  const fetchMovieOrTVShowImage = async (title: string): Promise<string | undefined> => {
     try {
       const apiKey = "YOUR_GOOGLE_API_KEY";
-      const cx = "YOUR_SEARCH_ENGINE_ID";
       const response = await fetch(
-        `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(
-          title
-        )}&searchType=image&num=1&key=${apiKey}&cx=${cx}`
+        `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(title)}&searchType=image&num=1&key=${apiKey}`
       );
       const data = await response.json();
-      return data.items?.[0]?.link; // Return the first image URL
+      return data.items?.[0]?.link; // Return the first image URL for movie or TV show
     } catch (error) {
-      console.error("Error fetching image:", error);
+      console.error("Error fetching movie or TV show image:", error);
       return undefined;
+    }
+  };
+
+  const fetchAlbumCover = async (title: string): Promise<string | undefined> => {
+    try {
+      const response = await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(title)}&type=album`
+      );
+      const data = await response.json();
+      return data.albums?.items[0]?.images[0]?.url; // Return the first album image URL
+    } catch (error) {
+      console.error("Error fetching album cover:", error);
+      return undefined;
+    }
+  };
+
+  const fetchSongCover = async (title: string): Promise<string | undefined> => {
+    try {
+      const response = await fetch(
+        `https://api.spotify.com/v1/search?q=${encodeURIComponent(title)}&type=track`
+      );
+      const data = await response.json();
+      return data.tracks?.items[0]?.album?.images[0]?.url; // Return the first song cover URL
+    } catch (error) {
+      console.error("Error fetching song cover:", error);
+      return undefined;
+    }
+  };
+
+  const fetchImage = async (title: string): Promise<string | undefined> => {
+    switch (category) {
+      case "books":
+        return await fetchBookCover(title, author);
+      case "movies":
+      case "tvShows":
+        return await fetchMovieOrTVShowImage(title);
+      case "albums":
+        return await fetchAlbumCover(title);
+      case "songs":
+        return await fetchSongCover(title);
+      default:
+        return undefined;
     }
   };
 
@@ -57,11 +96,7 @@ function MediaList({
 
       let imageUrl: string | undefined;
 
-      if (category === "books") {
-        imageUrl = await fetchBookCover(newTitle, author);
-      } else {
-        imageUrl = await fetchImage(newTitle);
-      }
+      imageUrl = await fetchImage(newTitle);
 
       onAdd({
         title: newTitle,
